@@ -16,6 +16,8 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
 
+    <name>Example Maven Plugin</name>
+    <description>An Example Maven Plugin</description>
 
     <dependencies>
         <dependency>
