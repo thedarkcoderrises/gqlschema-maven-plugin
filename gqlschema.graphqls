@@ -3,6 +3,8 @@ type Person {
  age: Int
  dob: String
  sex: String
+ address: Address
+ vehicle: Vehicle
 }
 
 type Address {
@@ -10,13 +12,16 @@ type Address {
  addLine2: String
  city: String
  state: String
+ country: Country
 }
 
 type Vehicle {
+ type: VehicleType
  modelCode: String
  brandName: String
  launchDate: String
  formattedDate: String
+ engineType: EngineType
 }
 
 enum Country {

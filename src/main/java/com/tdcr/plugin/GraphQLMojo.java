@@ -124,7 +124,9 @@ public class GraphQLMojo extends AbstractMojo {
                     }else if(field.getType().isEnum()){
                         schemaBuilder.append(" ").append(field.getName()).append("\n");
                         continue;
-                    }else if (!"$VALUES".equals(field.getName()))
+                    }
+
+                    if (!"$VALUES".equals(field.getName()))
                     schemaBuilder.append(" ").append(field.getName()).append(": "+field.getType().getSimpleName()+"\n");
                     continue;
                 }
