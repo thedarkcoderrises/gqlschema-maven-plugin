@@ -27,17 +27,20 @@ type Vehicle {
 enum Country {
  IND
  NON_IND
+ $VALUES: String
 }
 
 enum VehicleType {
  CAR
  BIKE
  CYCLE
+ $VALUES: String
 }
 
 enum EngineType {
  BATTERY
  TWO_STROKE
  FOUR_STROKE
+ $VALUES: String
 }
 

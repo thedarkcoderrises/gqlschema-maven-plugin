@@ -112,12 +112,13 @@ public class GraphQLMojo extends AbstractMojo {
             for (Field field :
                     clazz.getDeclaredFields()) {
 
+                if(!"$VALUES".equals(field.getName()))
                 if(!field.getType().getName().startsWith("java") && !field.getType().isPrimitive()){
                     if(enumList!= null && field.getType().isEnum()){
                         String enumType = field.getType().getName();
                         if(!enumList.contains(enumType))
                             enumList.add(enumType);
-                    }else if(!field.getType().isEnum() && !"$VALUES".equals(field.getName())){
+                    }else if(!field.getType().isEnum()){
                         String custType = field.getType().getName();
                         if(!customTypeList.contains(custType))
                             customTypeList.add(field.getType().getName());
@@ -126,7 +127,6 @@ public class GraphQLMojo extends AbstractMojo {
                         continue;
                     }
 
-                    if (!"$VALUES".equals(field.getName()))
                     schemaBuilder.append(" ").append(field.getName()).append(": "+field.getType().getSimpleName()+"\n");
                     continue;
                 }
