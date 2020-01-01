@@ -10,48 +10,26 @@
     <packaging>pom</packaging>
 
     <build>
-        <plugins>
-            <plugin>
-                <groupId>com.tdcr.plugin</groupId>
-                <artifactId>gqlschema-maven-plugin</artifactId>
-                <version>1.0-SNAPSHOT</version>
-                <configuration>
-                    <mandate>com.tdcr.annotation.NotNull</mandate>
-                    <fileName>test.schema</fileName>
-                    <pojoList>
-                        <param>com.tdcr.pojo.Person</param>
-                    </pojoList>
-                </configuration>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>gql</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-
-            <!--<plugin>
-                <groupId>com.github.ekryd.echo-maven-plugin</groupId>
-                <artifactId>echo-maven-plugin</artifactId>
-                <version>1.2.0</version>
-                <inherited>false</inherited>
-                <executions>
-                    <execution>
-                        <id>end</id>
-                        <goals>
-                            <goal>echo</goal>
-                        </goals>
-                        <phase>process-resources</phase>
-                        <configuration>
-                            <message>${line.separator}${line.separator}
-                                The project version is ${project.version}-${exampleVersion}
-                                ${line.separator}
-                            </message>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>-->
-        </plugins>
+        <!--<pluginManagement>-->
+            <plugins>
+                <plugin>
+                    <groupId>com.tdcr.plugin</groupId>
+                    <artifactId>gqlschema-maven-plugin</artifactId>
+                    <version>1.0-SNAPSHOT</version>
+                    <configuration>
+                        <schemaList>
+                            <param>com.tdcr.plugin.pojo.Person</param>
+                        </schemaList>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>graphql</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+            </plugins>
+        <!--</pluginManagement>-->
     </build>
 </project>

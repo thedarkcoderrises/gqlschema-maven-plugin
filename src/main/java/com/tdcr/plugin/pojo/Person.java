@@ -1,4 +1,4 @@
-package com.tdcr.pojo;
+package com.tdcr.plugin.pojo;
 
 import java.util.Date;
 

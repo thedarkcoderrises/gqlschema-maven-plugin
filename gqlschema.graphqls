@@ -1,0 +1,38 @@
+type Person {
+ name: String
+ age: Int
+ dob: String
+ sex: String
+}
+
+type Address {
+ addLine1: String
+ addLine2: String
+ city: String
+ state: String
+}
+
+type Vehicle {
+ modelCode: String
+ brandName: String
+ launchDate: String
+ formattedDate: String
+}
+
+enum Country {
+ IND
+ NON_IND
+}
+
+enum VehicleType {
+ CAR
+ BIKE
+ CYCLE
+}
+
+enum EngineType {
+ BATTERY
+ TWO_STROKE
+ FOUR_STROKE
+}
+

@@ -9,49 +9,59 @@ import org.apache.maven.plugin.MojoFailureException;
 import org.apache.maven.plugins.annotations.LifecyclePhase;
 import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
+import org.apache.maven.project.MavenProject;
 
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
+import java.io.*;
 import java.lang.reflect.Field;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-@Mojo(name = "gql",defaultPhase = LifecyclePhase.COMPILE)
-public class SchemaMojo extends AbstractMojo {
+@Mojo(name = "graphql",defaultPhase = LifecyclePhase.COMPILE)
+public class GraphQLMojo extends AbstractMojo {
 
     @Parameter
-    List<String> pojoList;
+    List<String> schemaList;
 
-    @Parameter(name = "fileName",defaultValue = "graphql.schema")
+    @Parameter(name = "fileName",defaultValue = "gqlschema.graphqls")
     String fileName;
 
-    @Parameter(name = "mandate")
+    @Parameter(name = "mandate",defaultValue = "NotNull")
     String mandate;
+
+    @Parameter( defaultValue="${project}", readonly=true, required=true)
+    private MavenProject project;
+
+    private URLClassLoader classLoader;
+
+
 
 
     @Override
     public void execute() throws MojoExecutionException, MojoFailureException {
         try {
-            updateGQLSchema(pojoList);
+            getLog().info("GQL start");
+            inialiseClassLoader();
+            updateGQLSchema();
+            getLog().info("GQL complete!");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    /*public static void main(String[] args) {
-        List<String> pojoLst = new ArrayList<>();
-        pojoLst.add("com.tdcr.pojo.Vehicle");
-        pojoLst.add("com.tdcr.pojo.Person");
-        try {
-            updateGQLSchema(pojoLst);
-        } catch (Exception e) {
-            e.printStackTrace();
+    private void inialiseClassLoader() throws Exception {
+        List<String> runtimeClassPathElements = project.getRuntimeClasspathElements();
+        URL[] runtimeURLs = new URL[runtimeClassPathElements.size()];
+        int i = 0;
+        for (String element:
+             runtimeClassPathElements) {
+            runtimeURLs[i] = new File(element).toURI().toURL();
         }
-    }*/
+        classLoader = new URLClassLoader(runtimeURLs,Thread.currentThread().getContextClassLoader());
+    }
 
-    private void updateGQLSchema(List<String> pojoList) throws Exception {
+    private void updateGQLSchema() throws Exception {
         boolean result=false;
 
         List<String> enumList = new ArrayList<>();
@@ -60,10 +70,11 @@ public class SchemaMojo extends AbstractMojo {
 
         Writer writer = null;
         writer = new BufferedWriter(new OutputStreamWriter(
-                new FileOutputStream("test.schema"), "utf-8"));
+                new FileOutputStream(fileName), "utf-8"));
 
-        StringBuilder schemaBuilder = getSchemaDetails(pojoList,enumList,customTypeList);
-        do{
+        StringBuilder schemaBuilder = getSchemaDetails(schemaList,enumList,customTypeList);
+
+        while (!enumList.isEmpty() || !customTypeList.isEmpty()){
             emptyList = new ArrayList<>();
 
             while (!enumList.isEmpty()){
@@ -76,7 +87,7 @@ public class SchemaMojo extends AbstractMojo {
                 schemaBuilder.append(getSchemaDetails(customTypeList,enumList,emptyList));
                 customTypeList = emptyList;
             };
-        }while (!enumList.isEmpty() || !customTypeList.isEmpty());
+        }
 
         writer.write(schemaBuilder.toString());
         writer.close();
@@ -95,37 +106,37 @@ public class SchemaMojo extends AbstractMojo {
         }
         for (String pojoName:
                 typeList) {
-            Class clazz =  Class.forName(pojoName);
+            Class clazz =  classLoader.loadClass(pojoName);
             schemaBuilder.append(prefix).append(clazz.getSimpleName()).append(" {\n");
 
             for (Field field :
                     clazz.getDeclaredFields()) {
 
-                if(field.getType().getPackage()!= null && (!field.getType().getName().startsWith("java"))){
+                if(!field.getType().getName().startsWith("java") && !field.getType().isPrimitive()){
                     if(enumList!= null && field.getType().isEnum()){
                         String enumType = field.getType().getName();
                         if(!enumList.contains(enumType))
                             enumList.add(enumType);
-                    }else if(!field.getType().isEnum()){
+                    }else if(!field.getType().isEnum() && !"$VALUES".equals(field.getName())){
                         String custType = field.getType().getName();
                         if(!customTypeList.contains(custType))
                             customTypeList.add(field.getType().getName());
-                    }
+                    }else if(field.getType().isEnum()){
+                        schemaBuilder.append(" ").append(field.getName()).append("\n");
+                        continue;
+                    }else if (!"$VALUES".equals(field.getName()))
                     schemaBuilder.append(" ").append(field.getName()).append(": "+field.getType().getSimpleName()+"\n");
                     continue;
                 }
 
-                if(!"$VALUES".equals(field.getName())){
-                    try{
-                        Class notNull = Class.forName(this.mandate);
-                        if( field.getAnnotation(notNull) != null){
-                            schemaBuilder.append(" ").append(field.getName()).append(": "+strType+mandate+"\n");
-                        }else{
-                            schemaBuilder.append(" ").append(field.getName()).append(": "+strType+"\n");
-                        }
-                    }catch (Exception e){
-                        schemaBuilder.append(" ").append(field.getName()).append(": "+strType+"\n");
-                    }
+                switch (field.getType().getSimpleName()){
+                    case "boolean":
+                    case "Boolean":schemaBuilder.append(" ").append(field.getName()).append(": Boolean\n"); break;
+                    case "int":
+                    case "Integer": schemaBuilder.append(" ").append(field.getName()).append(": Int\n"); break;
+                    case "float":
+                    case "Float":schemaBuilder.append(" ").append(field.getName()).append(": Float\n"); break;
+                    default:schemaBuilder.append(" ").append(field.getName()).append(": String\n"); break;
                 }
 
             }
